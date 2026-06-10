@@ -1,0 +1,193 @@
+:root {
+  --bg-color: #fafafa;
+  --surface-bg: #ffffff;
+  --border-light: #eaeaea;
+  --text-primary: #111111;
+  --text-secondary: #666666;
+  --accent-primary: #2563eb; /* Clean Blue */
+  --accent-hover: #1d4ed8;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utilities */
+.card {
+  background: var(--surface-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background: #333333;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--surface-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+  background: #f5f5f5;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--surface-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-field::placeholder { color: #a1a1aa; }
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Marquee Animation */
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.marquee-content {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  min-width: 100%;
+  gap: 60px;
+  padding-right: 60px;
+  animation: scrollX 20s linear infinite;
+}
+
+@keyframes scrollX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+/* Aurora Background */
+.aurora-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  z-index: -1;
+  background: var(--bg-color);
+}
+
+.aurora-blob {
+  position: absolute;
+  filter: blur(100px);
+  opacity: 0.5;
+  border-radius: 50%;
+  animation: float-aurora 20s ease-in-out infinite alternate;
+}
+
+.aurora-1 {
+  width: 600px; height: 600px;
+  background: #e0e7ff; /* soft indigo */
+  top: -200px; left: -100px;
+  animation-delay: 0s;
+}
+
+.aurora-2 {
+  width: 500px; height: 500px;
+  background: #dbeafe; /* soft blue */
+  bottom: -200px; right: -100px;
+  animation-delay: -5s;
+}
+
+.aurora-3 {
+  width: 400px; height: 400px;
+  background: #f3e8ff; /* soft purple */
+  top: 30%; left: 40%;
+  animation-delay: -10s;
+}
+
+@keyframes float-aurora {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(150px, -50px) scale(1.1); }
+  66% { transform: translate(-50px, 150px) scale(0.9); }
+  100% { transform: translate(50px, 50px) scale(1); }
+}
+
+/* Text Gradient Shine */
+.text-animate-gradient {
+  background: linear-gradient(to right, var(--text-primary) 20%, var(--accent-primary) 50%, var(--text-primary) 80%);
+  background-size: 200% auto;
+  color: #000;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-shine 5s linear infinite;
+}
+
+@keyframes text-shine {
+  to { background-position: 200% center; }
+}
+
+@media (max-width: 1100px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}

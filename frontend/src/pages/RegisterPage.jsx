@@ -1,17 +1,42 @@
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import axios from 'axios';
 import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', university: '', major: '', graduationYear: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setFormData({...formData, [e.target.name]: e.target.value});
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        education: {
+          university: formData.university,
+          major: formData.major,
+          graduationYear: formData.graduationYear
+        }
+      };
+
+      await axios.post('http://localhost:8000/api/auth/register', payload);
+      // Registration successful, navigate to login
+      navigate('/login');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Something went wrong during registration');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,6 +54,12 @@ export default function RegisterPage() {
         </h2>
 
         <form onSubmit={handleRegister}>
+          {error && (
+            <div style={{ color: '#ef4444', background: '#fef2f2', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem', border: '1px solid #fca5a5' }}>
+              {error}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '16px' }}>
             <div style={{ flex: 1 }}>
               <label className="label">Full Name</label>
@@ -62,8 +93,8 @@ export default function RegisterPage() {
             </div>
           </div>
           
-          <button type="submit" className="btn-primary" style={{ width: '100%' }}>
-            Create account
+          <button type="submit" className="btn-primary" style={{ width: '100%', opacity: loading ? 0.7 : 1 }} disabled={loading}>
+            {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 

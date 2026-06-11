@@ -12,6 +12,9 @@ const companies = [
   { name: 'Myntra', domain: 'myntra.com' },
   { name: 'Goldman Sachs', domain: 'goldmansachs.com' },
   { name: 'Blinkit', domain: 'blinkit.com' },
+  { name: 'LinkedIn', domain: 'linkedin.com' },
+  { name: 'Unstop', domain: 'unstop.com' },
+  { name: 'Cutshort', domain: 'cutshort.io' },
 ];
 
 export default function WorkflowAnimation() {

@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import WorkflowAnimation from '../components/WorkflowAnimation';
 import { ArrowRight, CheckCircle2, Clock, PlayCircle } from 'lucide-react';
 import { TypeAnimation } from 'react-type-animation';
+import AnimatedLogo from '../components/AnimatedLogo';
 
 export default function LandingPage() {
 
   return (
     <div style={{ paddingTop: '80px', position: 'relative', overflowX: 'hidden' }}>
-      
+
       {/* Aurora Animated Background */}
       <div className="aurora-bg">
         <div className="aurora-blob aurora-1"></div>
@@ -17,12 +18,12 @@ export default function LandingPage() {
       </div>
 
       <section style={{ minHeight: '85vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '0 20px', position: 'relative', zIndex: 10 }}>
-        
+
         {/* Background Example Workflow Cards with REAL SVGs */}
         <div className="hide-on-mobile" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: -1 }}>
-          
+
           {/* Google Card */}
-          <motion.div 
+          <motion.div
             animate={{ y: [40, -20, 40] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             className="card" style={{ position: 'absolute', top: '15%', left: '2%', padding: '12px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', display: 'flex', gap: '12px', alignItems: 'center', width: '230px', textAlign: 'left', opacity: 0.9 }}
@@ -40,7 +41,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Meta Card */}
-          <motion.div 
+          <motion.div
             animate={{ y: [-30, 30, -30] }}
             transition={{ duration: 7, delay: 1, repeat: Infinity, ease: "easeInOut" }}
             className="card" style={{ position: 'absolute', top: '20%', right: '2%', padding: '12px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', display: 'flex', gap: '12px', alignItems: 'center', width: '230px', textAlign: 'left', opacity: 0.9 }}
@@ -58,7 +59,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* PayPal Card */}
-          <motion.div 
+          <motion.div
             animate={{ y: [20, -40, 20] }}
             transition={{ duration: 8, delay: 2, repeat: Infinity, ease: "easeInOut" }}
             className="card" style={{ position: 'absolute', bottom: '15%', left: '3%', padding: '12px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', display: 'flex', gap: '12px', alignItems: 'center', width: '230px', textAlign: 'left', opacity: 0.9 }}
@@ -76,7 +77,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Salesforce Card (Positive state) */}
-          <motion.div 
+          <motion.div
             animate={{ y: [-40, 20, -40] }}
             transition={{ duration: 6.5, delay: 0.5, repeat: Infinity, ease: "easeInOut" }}
             className="card" style={{ position: 'absolute', bottom: '20%', right: '3%', padding: '12px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', display: 'flex', gap: '12px', alignItems: 'center', width: '230px', textAlign: 'left', opacity: 0.9 }}
@@ -94,7 +95,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Deloitte Card */}
-          <motion.div 
+          <motion.div
             animate={{ y: [30, -30, 30] }}
             transition={{ duration: 7.5, delay: 3, repeat: Infinity, ease: "easeInOut" }}
             className="card" style={{ position: 'absolute', top: '45%', left: '2%', padding: '12px', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', display: 'flex', gap: '12px', alignItems: 'center', width: '230px', textAlign: 'left', opacity: 0.8 }}
@@ -113,26 +114,18 @@ export default function LandingPage() {
 
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ maxWidth: '680px', background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(20px)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}
+          style={{ maxWidth: '680px', background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(20px)', padding: '32px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.8)', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
         >
-          <div style={{ overflow: 'hidden', display: 'inline-block', marginBottom: '20px' }}>
-            <motion.div 
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-              style={{ display: 'inline-block', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.5px' }}
-              className="logo-gradient-text"
-            >
-              PlacePal
-            </motion.div>
+          <div style={{ marginBottom: '24px' }}>
+            <AnimatedLogo />
           </div>
 
           <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 800, lineHeight: 1.1, marginBottom: '20px', letterSpacing: '-1.5px', color: 'var(--text-primary)' }}>
-            The professional way <br/> to track your <br />
+            The professional way <br /> to track your <br />
             <div style={{ minHeight: '1.2em', display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
               <TypeAnimation
                 sequence={[
@@ -150,8 +143,8 @@ export default function LandingPage() {
               />
             </div>
           </h1>
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -160,7 +153,7 @@ export default function LandingPage() {
             A fast, clean, and powerful dashboard designed for ambitious students targeting top-tier tech companies.
           </motion.p>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}

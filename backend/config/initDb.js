@@ -27,6 +27,18 @@ const initDb = async () => {
             );
         `);
         console.log('PostgreSQL: Applications table ready.');
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS resumes (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                version_name VARCHAR(255) NOT NULL,
+                file_path TEXT NOT NULL,
+                is_starred BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('PostgreSQL: Resumes table ready.');
     } catch (err) {
         console.error('Error initializing database:', err);
     }

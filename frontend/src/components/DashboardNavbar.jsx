@@ -1,11 +1,12 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { LogOut, Bell, Search } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { LogOut, Bell, Search, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import AnimatedLogo from './AnimatedLogo';
 
-export default function DashboardNavbar() {
+export default function DashboardNavbar({ onMenuClick }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -29,32 +30,32 @@ export default function DashboardNavbar() {
       justifyContent: 'space-between',
       padding: '0 32px'
     }}>
-      {/* Left: Logo */}
-      <Link to="/" style={{ textDecoration: 'none' }}>
-        <AnimatedLogo />
-      </Link>
+      {/* Left: Menu & Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>
+          <Menu size={24} />
+        </button>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <AnimatedLogo />
+        </Link>
+      </div>
 
       {/* Center: Search */}
-      <div style={{
-        flex: 1, maxWidth: '400px', margin: '0 32px', position: 'relative', display: 'flex', alignItems: 'center'
-      }}>
-        <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-secondary)' }} />
-        <input 
-          type="text" 
-          placeholder="Search applications..." 
-          style={{
-            width: '100%',
-            padding: '8px 16px 8px 36px',
-            borderRadius: '100px',
-            border: '1px solid var(--border-light)',
-            background: 'var(--bg-color)',
-            fontSize: '0.9rem',
-            outline: 'none',
-            transition: 'all 0.2s'
-          }}
-          onFocus={(e) => { e.target.style.borderColor = 'var(--accent-primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.1)'; }}
-          onBlur={(e) => { e.target.style.borderColor = 'var(--border-light)'; e.target.style.boxShadow = 'none'; }}
-        />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', margin: '0 32px' }}>
+        <div style={{ position: 'relative', width: '300px', display: 'flex', alignItems: 'center' }}>
+          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--text-secondary)' }} />
+          <input 
+            type="text" 
+            placeholder="Search..." 
+            style={{
+              width: '100%', padding: '8px 16px 8px 36px', borderRadius: '100px',
+              border: '1px solid var(--border-light)', background: 'var(--bg-color)',
+              fontSize: '0.9rem', outline: 'none', transition: 'all 0.2s'
+            }}
+            onFocus={(e) => { e.target.style.borderColor = 'var(--accent-primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.1)'; }}
+            onBlur={(e) => { e.target.style.borderColor = 'var(--border-light)'; e.target.style.boxShadow = 'none'; }}
+          />
+        </div>
       </div>
 
       {/* Right: Auth/User Profile */}

@@ -14,6 +14,11 @@ app.use(cors());
 app.use('/api/auth', authRoutes);
 const applicationRoutes = require('./routes/applicationRoutes');
 app.use('/api/applications', applicationRoutes);
+const resumeRoutes = require('./routes/resumeRoutes');
+app.use('/api/resumes', resumeRoutes);
+
+// Serve static files (Resumes)
+app.use('/uploads', express.static('uploads'));
 
 // Initialize Database Schema
 initDb();

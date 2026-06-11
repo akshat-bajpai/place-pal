@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createApplication } from '../api/applications';
 
-export default function AddApplicationModal({ isOpen, onClose, onAdd }) {
+export default function AddApplicationModal({ isOpen, onClose, onAdd, initialStatus = 'Applied' }) {
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [link, setLink] = useState('');
@@ -18,7 +18,7 @@ export default function AddApplicationModal({ isOpen, onClose, onAdd }) {
     setError('');
 
     try {
-      const payload = { company, role };
+      const payload = { company, role, status: initialStatus };
       if (link) payload.link = link;
       if (dateApplied) payload.created_at = new Date(dateApplied).toISOString();
 

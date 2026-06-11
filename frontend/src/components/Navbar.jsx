@@ -7,7 +7,11 @@ export default function Navbar() {
   const token = localStorage.getItem('token');
 
   // Dashboard has its own specialized premium navbar
-  if (location.pathname.startsWith('/dashboard')) {
+  const isDashboardRoute = location.pathname.startsWith('/dashboard') || 
+                           location.pathname.startsWith('/applications') || 
+                           location.pathname.startsWith('/resumes');
+
+  if (isDashboardRoute) {
     return null;
   }
 

@@ -29,7 +29,7 @@ export default function RegisterPage() {
         }
       };
 
-      await axios.post('http://localhost:8000/api/auth/register', payload);
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/register`, payload);
       // Registration successful, navigate to login
       navigate('/login');
     } catch (err) {

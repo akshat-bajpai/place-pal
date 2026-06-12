@@ -8,12 +8,14 @@ export default function DashboardLayout() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', display: 'flex', flexDirection: 'column' }}>
-      <DashboardNavbar onMenuClick={() => setIsSidebarOpen(true)} />
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <DashboardNavbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
       
-      <main style={{ flex: 1 }}>
-        <Outlet />
-      </main>
+      <div style={{ display: 'flex', flex: 1 }}>
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <main style={{ flex: 1 }}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

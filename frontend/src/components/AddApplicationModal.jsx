@@ -50,7 +50,7 @@ export default function AddApplicationModal({ isOpen, onClose, onAdd, initialSta
         onClick={onClose}
       >
         <motion.div
-          initial={{ y: 50, opacity: 0, scale: 0.95 }}
+          initial={{ y: 20, opacity: 0, scale: 0.95 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 20, opacity: 0, scale: 0.95 }}
           onClick={(e) => e.stopPropagation()}

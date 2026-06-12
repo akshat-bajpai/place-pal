@@ -3,7 +3,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { motion } from 'framer-motion';
 import { ExternalLink, Trash2, Calendar, GripVertical, ChevronDown } from 'lucide-react';
 
-export default function ApplicationCard({ app, onStatusChange, onDelete }) {
+export default function ApplicationCard({ app, onStatusChange, onDelete, index = 0 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: app.id });
 
   const style = {
@@ -22,10 +22,10 @@ export default function ApplicationCard({ app, onStatusChange, onDelete }) {
       className="card"
     >
       <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.3, delay: index * 0.05 }}
         whileHover={{ y: -4, boxShadow: 'var(--shadow-hover)' }}
         style={{ padding: '20px', background: 'var(--surface-bg)', borderRadius: '12px', position: 'relative' }}
       >

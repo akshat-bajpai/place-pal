@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle, X } from 'lucide-react';
-import AnimatedLogo from './AnimatedLogo';
+import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
 
   const links = [
@@ -16,66 +15,75 @@ export default function Sidebar({ isOpen, onClose }) {
   ];
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', zIndex: 100 }}
-          />
-
-          {/* Sidebar */}
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            style={{
-              position: 'fixed', top: 0, left: 0, bottom: 0, width: '280px',
-              background: 'var(--surface-bg)', borderRight: '1px solid var(--border-light)',
-              zIndex: 101, display: 'flex', flexDirection: 'column', padding: '24px 0'
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px', marginBottom: '40px' }}>
-              <AnimatedLogo />
-              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 16px' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', padding: '0 8px', marginBottom: '8px' }}>
-                Navigation
+    <motion.div
+      initial={false}
+      animate={{ width: isOpen ? '280px' : '80px' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      style={{
+        background: 'var(--surface-bg)',
+        borderRight: '1px solid var(--border-light)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '24px 0',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        flexShrink: 0,
+        height: 'calc(100vh - 64px)',
+        position: 'sticky',
+        top: '64px'
+      }}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: isOpen ? '0 16px' : '0 12px' }}>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px', padding: '0 8px', marginBottom: '8px', whiteSpace: 'nowrap' }}
+            >
+              Navigation
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {links.map((link) => {
+          const isActive = location.pathname === link.path;
+          return (
+            <Link
+              key={link.path}
+              to={link.path}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+                borderRadius: '12px', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem',
+                color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                background: isActive ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+                transition: 'all 0.2s',
+                justifyContent: isOpen ? 'flex-start' : 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden'
+              }}
+              title={!isOpen ? link.name : ''}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', flexShrink: 0 }}>
+                {link.icon}
               </div>
-              
-              {links.map((link) => {
-                const isActive = location.pathname === link.path;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    onClick={onClose}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                      borderRadius: '12px', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem',
-                      color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                      background: isActive ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-                      transition: 'all 0.2s'
-                    }}
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
                   >
-                    {link.icon}
                     {link.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }

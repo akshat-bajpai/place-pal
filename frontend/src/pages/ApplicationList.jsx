@@ -118,24 +118,18 @@ export default function ApplicationList() {
       }>
         <AnimatePresence>
           {applications.map((app, i) => (
-            <motion.div
+            <ApplicationCard 
               key={app.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <ApplicationCard 
-                app={app} 
-                onStatusChange={handleStatusChange}
-                onDelete={handleDelete}
-              />
-            </motion.div>
+              app={app} 
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+              index={i}
+            />
           ))}
 
           {applications.length === 0 && (
             <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               style={{ gridColumn: '1 / -1', padding: '100px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}
             >
               <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px' }}>No applications in this stage</h3>

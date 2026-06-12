@@ -59,7 +59,7 @@ export default function DashboardHero({ applications }) {
   
   return (
     <div style={{ marginBottom: '40px' }}>
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-1px', marginBottom: '8px' }}>
           Track Your Career Journey
         </h1>

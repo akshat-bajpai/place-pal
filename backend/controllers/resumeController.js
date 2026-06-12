@@ -1,11 +1,12 @@
 const db = require('../config/db');
 const path = require('path');
 const fs = require('fs');
+const { evaluateResume } = require('../utils/atsScorer');
 
 // Upload a new resume version
 exports.uploadResume = async (req, res) => {
     try {
-        const { version_name } = req.body;
+        const { version_name, target_role, academic_year } = req.body;
         
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
@@ -19,12 +20,34 @@ exports.uploadResume = async (req, res) => {
 
         const file_path = `/uploads/${req.file.filename}`;
 
+        // 1. Instantly insert into DB with ats_score = -1 (Pending)
         const result = await db.query(
-            'INSERT INTO resumes (user_id, version_name, file_path) VALUES ($1, $2, $3) RETURNING *',
-            [req.user.id, version_name, file_path]
+            'INSERT INTO resumes (user_id, version_name, file_path, ats_score, ats_feedback, target_role, academic_year) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [req.user.id, version_name, file_path, -1, null, target_role || 'General', academic_year || '3rd Year']
         );
+        const newResume = result.rows[0];
 
-        res.status(201).json(result.rows[0]);
+        // 2. Respond to the frontend instantly
+        res.status(201).json(newResume);
+
+        // 3. Process ATS Score asynchronously in the background
+        (async () => {
+            try {
+                const pdfBuffer = fs.readFileSync(req.file.path);
+                const evaluation = await evaluateResume(pdfBuffer, target_role || 'General', academic_year || '3rd Year');
+                
+                await db.query(
+                    'UPDATE resumes SET ats_score = $1, ats_feedback = $2 WHERE id = $3',
+                    [evaluation.overall_score, JSON.stringify(evaluation), newResume.id]
+                );
+            } catch (evalError) {
+                console.error('Background ATS evaluation failed:', evalError);
+                await db.query(
+                    'UPDATE resumes SET ats_score = 0, ats_feedback = $1 WHERE id = $2',
+                    [JSON.stringify({ strengths: [], weaknesses: ["Fatal error during background processing.", "Error: " + evalError.message], suggestions: ["Please delete and try again."] }), newResume.id]
+                );
+            }
+        })();
     } catch (error) {
         console.error('Error uploading resume:', error);
         // If there was an error saving to DB, try to clean up the file

@@ -35,9 +35,22 @@ const initDb = async () => {
                 version_name VARCHAR(255) NOT NULL,
                 file_path TEXT NOT NULL,
                 is_starred BOOLEAN DEFAULT FALSE,
+                target_role VARCHAR(255),
+                academic_year VARCHAR(50),
+                ats_score INTEGER DEFAULT 0,
+                ats_feedback JSONB,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // Auto-migrations for existing resumes table
+        try {
+            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS target_role VARCHAR(255) DEFAULT 'General';`);
+            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '3rd Year';`);
+            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_score INTEGER DEFAULT 0;`);
+            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_feedback JSONB;`);
+        } catch (migrationErr) {
+            console.log('Migration note:', migrationErr.message);
+        }
         console.log('PostgreSQL: Resumes table ready.');
     } catch (err) {
         console.error('Error initializing database:', err);

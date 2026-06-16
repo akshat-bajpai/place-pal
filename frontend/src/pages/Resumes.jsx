@@ -9,7 +9,7 @@ export default function Resumes() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
-  
+
   const getAtsColor = (score) => {
     if (score === -1) return '#3b82f6'; // Blue
     if (!score && score !== 0) return '#9ca3af'; // Gray
@@ -17,7 +17,7 @@ export default function Resumes() {
     if (score >= 50) return '#f59e0b'; // Yellow
     return '#ef4444'; // Red
   };
-  
+
   // Upload State
   const [versionName, setVersionName] = useState('');
   const [targetRole, setTargetRole] = useState('');
@@ -148,10 +148,10 @@ export default function Resumes() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '100px', color: 'var(--text-secondary)' }}>Loading vault...</div>
         ) : (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-            gap: '24px' 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '24px'
           }}>
             <AnimatePresence>
               {resumes.map((resume, index) => (
@@ -167,9 +167,9 @@ export default function Resumes() {
 
                   {/* Star Toggle */}
                   <div style={{ position: 'absolute', top: '24px', right: '24px', zIndex: 10 }}>
-                    <button 
+                    <button
                       onClick={() => handleStar(resume.id)}
-                      style={{ 
+                      style={{
                         background: 'none', border: 'none', cursor: 'pointer',
                         color: resume.is_starred ? '#f59e0b' : 'var(--border-light)',
                         transition: 'all 0.2s transform 0.2s',
@@ -186,68 +186,63 @@ export default function Resumes() {
                       <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <FileText size={24} />
                       </div>
-                      
+
                       {resume.ats_score !== null && (
-                        <div style={{ 
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', 
-                          background: `${getAtsColor(resume.ats_score)}20`, 
-                          color: getAtsColor(resume.ats_score), 
-                          padding: '6px 12px', borderRadius: '12px',
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '4px',
+                          background: `${getAtsColor(resume.ats_score)}15`,
+                          color: getAtsColor(resume.ats_score),
+                          padding: '4px 10px', borderRadius: '100px',
                           border: `1px solid ${getAtsColor(resume.ats_score)}40`,
                           marginRight: '32px'
                         }}>
                           {resume.ats_score === -1 ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                                <Loader2 size={14} />
-                              </motion.div>
-                              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase' }}>Calculating</span>
-                            </div>
-                          ) : (
                             <>
-                              <span style={{ fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>ATS Score</span>
-                              <span style={{ fontSize: '1.4rem', fontWeight: 800, lineHeight: 1 }}>{resume.ats_score}</span>
+                              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+                                <Loader2 size={12} />
+                              </motion.div>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>Calc</span>
                             </>
+                          ) : (
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>ATS {resume.ats_score}</span>
                           )}
                         </div>
                       )}
                     </div>
-                    
+
                     <div>
                       <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 4px 0' }}>{resume.version_name}</h3>
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
                         Uploaded {new Date(resume.created_at).toLocaleDateString()}
                       </p>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', margin: '4px 0 0 0', fontWeight: 600 }}>
-                        Target: {resume.target_role || 'General'} | {resume.academic_year || '3rd Year'}
-                      </p>
                     </div>
 
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '20px' }}>
-                      <a 
-                        href={`http://localhost:8000${resume.file_path}`} 
-                        target="_blank" 
+                      <a
+                        href={`http://localhost:8000${resume.file_path}`}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-secondary" 
+                        className="btn-secondary"
                         style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px', padding: '8px', fontSize: '0.9rem', minWidth: '80px' }}
                       >
                         <Download size={16} /> View
                       </a>
-                      <button 
+                      <button
                         onClick={() => setSelectedFeedback(resume)}
                         className="btn-secondary"
                         disabled={resume.ats_score === -1}
                         style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '8px', padding: '8px', fontSize: '0.9rem', minWidth: '100px', background: resume.ats_score === -1 ? 'var(--bg-secondary)' : 'var(--text-primary)', color: resume.ats_score === -1 ? 'var(--text-secondary)' : '#fff', cursor: resume.ats_score === -1 ? 'not-allowed' : 'pointer' }}
                       >
-                        {resume.ats_score === -1 ? 'Waiting...' : 'Feedback'}
+                        {resume.ats_score === -1 ? 'Waiting...' : 'Details'}
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(resume.id)}
-                        style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', transition: 'background 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#fee2e2'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#fef2f2'}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', padding: '8px', cursor: 'pointer', transition: 'transform 0.2s, opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        onMouseOver={(e) => { e.currentTarget.style.opacity = '0.7'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'scale(1)'; }}
+                        title="Delete Resume"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
@@ -256,7 +251,7 @@ export default function Resumes() {
 
               {/* Empty State */}
               {resumes.length === 0 && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="card"
                   style={{ gridColumn: '1 / -1', padding: '80px 20px', textAlign: 'center', border: '2px dashed var(--border-light)', background: 'transparent', boxShadow: 'none' }}
@@ -279,7 +274,7 @@ export default function Resumes() {
       {/* Upload Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}
             onClick={() => setIsModalOpen(false)}
@@ -308,13 +303,13 @@ export default function Resumes() {
 
                 <div style={{ marginBottom: '16px' }}>
                   <label className="label">Version Name *</label>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    placeholder="e.g. Frontend Dev - Google" 
-                    value={versionName} 
-                    onChange={(e) => setVersionName(e.target.value)} 
-                    required 
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="e.g. Frontend Dev - Google"
+                    value={versionName}
+                    onChange={(e) => setVersionName(e.target.value)}
+                    required
                     autoFocus
                   />
                 </div>
@@ -322,22 +317,22 @@ export default function Resumes() {
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
                   <div style={{ flex: 1 }}>
                     <label className="label">Target Role *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
+                    <input
+                      type="text"
+                      className="input-field"
                       style={{ marginBottom: 0 }}
-                      placeholder="e.g. Backend Engineer" 
-                      value={targetRole} 
-                      onChange={(e) => setTargetRole(e.target.value)} 
-                      required 
+                      placeholder="e.g. Backend Engineer"
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      required
                     />
                   </div>
                   <div style={{ flex: 1 }}>
                     <label className="label">Academic Year *</label>
-                    <select 
-                      className="input-field" 
+                    <select
+                      className="input-field"
                       style={{ marginBottom: 0 }}
-                      value={academicYear} 
+                      value={academicYear}
                       onChange={(e) => setAcademicYear(e.target.value)}
                       required
                     >
@@ -352,10 +347,10 @@ export default function Resumes() {
 
                 <div style={{ marginBottom: '32px' }}>
                   <label className="label">PDF File *</label>
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
-                    style={{ 
-                      border: '2px dashed var(--border-light)', borderRadius: '12px', padding: '32px', textAlign: 'center', 
+                    style={{
+                      border: '2px dashed var(--border-light)', borderRadius: '12px', padding: '32px', textAlign: 'center',
                       cursor: 'pointer', background: file ? 'rgba(79, 70, 229, 0.05)' : 'transparent',
                       transition: 'all 0.2s', borderColor: file ? 'var(--accent-primary)' : 'var(--border-light)'
                     }}
@@ -374,12 +369,12 @@ export default function Resumes() {
                       </div>
                     )}
                   </div>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleFileChange} 
-                    accept="application/pdf" 
-                    style={{ display: 'none' }} 
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="application/pdf"
+                    style={{ display: 'none' }}
                   />
                 </div>
 
@@ -394,7 +389,7 @@ export default function Resumes() {
       {/* Feedback Modal */}
       <AnimatePresence>
         {selectedFeedback && selectedFeedback.ats_feedback && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}
             onClick={() => setSelectedFeedback(null)}
@@ -405,12 +400,15 @@ export default function Resumes() {
               exit={{ y: 20, opacity: 0, scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
               className="card"
-              style={{ width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '32px' }}
+              style={{ width: '100%', maxWidth: '900px', maxHeight: '90vh', overflowY: 'auto', padding: '32px' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                 <div>
                   <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '4px' }}>ATS Feedback</h2>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{selectedFeedback.version_name}</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', margin: '0 0 4px 0' }}>{selectedFeedback.version_name}</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', margin: 0, fontWeight: 600 }}>
+                    Target: {selectedFeedback.target_role || 'General'} | {selectedFeedback.academic_year || '3rd Year'}
+                  </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: `${getAtsColor(selectedFeedback.ats_score)}15`, padding: '8px 16px', borderRadius: '12px', border: `1px solid ${getAtsColor(selectedFeedback.ats_score)}40` }}>
@@ -425,45 +423,119 @@ export default function Resumes() {
 
               {selectedFeedback.ats_feedback.parsing_flag && (
                 <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c', padding: '12px 16px', borderRadius: '8px', marginBottom: '24px', fontSize: '0.9rem', fontWeight: 500 }}>
-                  ⚠️ Parsing Issues Detected: We had trouble reading the text from this PDF. Export directly from your word processor instead of using an image-based PDF.
+                  ⚠️ Parsing Issues Detected: The document could not be read clearly, or structural issues (like tables/images in Word docs) were detected. This may lower your rule-based ATS score.
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-                <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                  <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '12px', letterSpacing: '0.5px' }}>Score Breakdown</h4>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.95rem' }}>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Structure</span> <strong>{selectedFeedback.ats_feedback.structure_score}/25</strong></li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Skills</span> <strong>{selectedFeedback.ats_feedback.skills_score}/20</strong></li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Achievements</span> <strong>{selectedFeedback.ats_feedback.achievement_score}/20</strong></li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Projects</span> <strong>{selectedFeedback.ats_feedback.project_score}/15</strong></li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Writing</span> <strong>{selectedFeedback.ats_feedback.writing_score}/10</strong></li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>Formatting</span> <strong>{selectedFeedback.ats_feedback.formatting_score}/10</strong></li>
-                  </ul>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{ background: '#ecfdf5', padding: '16px', borderRadius: '12px', border: '1px solid #a7f3d0' }}>
-                    <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: '#047857', fontWeight: 700, marginBottom: '8px', letterSpacing: '0.5px' }}>Strengths</h4>
-                    <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem', color: '#065f46' }}>
-                      {selectedFeedback.ats_feedback.strengths?.map((s, i) => <li key={i} style={{ marginBottom: '4px' }}>{s}</li>)}
-                    </ul>
+              {selectedFeedback.ats_feedback.mode === 'error' ? (
+                 <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
+                    <h4 style={{ margin: '0 0 8px 0' }}>Evaluation Error</h4>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>{selectedFeedback.ats_feedback.error_message}</p>
+                    {selectedFeedback.ats_feedback.suggestions && (
+                      <ul style={{ marginTop: '8px', paddingLeft: '20px', fontSize: '0.85rem' }}>
+                        {selectedFeedback.ats_feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                    )}
+                 </div>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+                    <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '12px', letterSpacing: '0.5px' }}>Rule-Based Analysis</h4>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.95rem' }}>
+                        <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                           <span>Formatting Score</span> <strong>{selectedFeedback.ats_feedback.rule_based?.score || 0}/100</strong>
+                        </li>
+                        {selectedFeedback.ats_feedback.rule_based?.keyword_coverage_pct !== undefined && (
+                          <>
+                            <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                               <span>Keyword Coverage</span> <strong>{selectedFeedback.ats_feedback.rule_based.keyword_coverage_pct}%</strong>
+                            </li>
+                            {selectedFeedback.ats_feedback.rule_based.similarity_pct !== null && (
+                                <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                   <span>TF-IDF Similarity</span> <strong>{selectedFeedback.ats_feedback.rule_based.similarity_pct}%</strong>
+                                </li>
+                            )}
+                          </>
+                        )}
+                        {/* Fallback for general mode checks */}
+                        {selectedFeedback.ats_feedback.rule_based?.checks && (
+                           <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                             {selectedFeedback.ats_feedback.rule_based.checks.slice(0, 3).map((check, idx) => (
+                               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>{check.name}</span>
+                                 <span>{check.points}/{check.max}</span>
+                               </div>
+                             ))}
+                           </div>
+                        )}
+                      </ul>
+                    </div>
+                    
+                    <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--accent-primary)', fontWeight: 700, marginBottom: '12px', letterSpacing: '0.5px' }}>Gemini AI Analysis</h4>
+                      {selectedFeedback.ats_feedback.ai ? (
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.95rem' }}>
+                          <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <span>Semantic Match</span> <strong>{selectedFeedback.ats_feedback.ai.semantic_match_score || selectedFeedback.ats_feedback.ai.content_quality_score || 0}/100</strong>
+                          </li>
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '12px', lineHeight: 1.4 }}>
+                            {selectedFeedback.ats_feedback.ai.summary}
+                          </p>
+                        </ul>
+                      ) : (
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+                          AI analysis was unavailable or disabled. Only rule-based metrics are shown.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--text-primary)' }}>Areas for Improvement</h4>
-                <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
-                  {selectedFeedback.ats_feedback.weaknesses?.map((w, i) => <li key={i} style={{ marginBottom: '8px' }}>{w}</li>)}
-                </ul>
-              </div>
+                  {selectedFeedback.ats_feedback.ai?.bullet_improvements?.length > 0 && (
+                    <div style={{ marginBottom: '24px' }}>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--text-primary)' }}>Bullet Point Improvements (AI)</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {selectedFeedback.ats_feedback.ai.bullet_improvements.map((bullet, i) => (
+                          <div key={i} style={{ background: 'var(--surface-bg)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-light)', fontSize: '0.9rem' }}>
+                            <div style={{ color: '#ef4444', textDecoration: 'line-through', marginBottom: '4px' }}>{bullet.original}</div>
+                            <div style={{ color: '#10b981', fontWeight: 500, marginBottom: '6px' }}>{bullet.improved}</div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontStyle: 'italic' }}>Why: {bullet.reason}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              <div>
-                <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--accent-primary)' }}>Actionable Suggestions</h4>
-                <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                  {selectedFeedback.ats_feedback.suggestions?.map((s, i) => <li key={i} style={{ marginBottom: '8px' }}>{s}</li>)}
-                </ul>
-              </div>
+                  {selectedFeedback.ats_feedback.rule_based?.missing_keywords?.length > 0 && (
+                    <div style={{ marginBottom: '24px' }}>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: '#ef4444' }}>Missing Keywords</h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {selectedFeedback.ats_feedback.rule_based.missing_keywords.slice(0, 15).map((kw, i) => (
+                          <span key={i} style={{ background: '#fef2f2', color: '#b91c1c', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', border: '1px solid #fecaca' }}>{kw}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedFeedback.ats_feedback.ai?.tailoring_suggestions?.length > 0 && (
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--accent-primary)' }}>Tailoring Suggestions</h4>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                        {selectedFeedback.ats_feedback.ai.tailoring_suggestions.map((s, i) => <li key={i} style={{ marginBottom: '8px' }}>{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {(!selectedFeedback.ats_feedback.ai?.tailoring_suggestions || selectedFeedback.ats_feedback.ai.tailoring_suggestions.length === 0) && selectedFeedback.ats_feedback.rule_based?.suggestions?.length > 0 && (
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--accent-primary)' }}>Suggestions</h4>
+                      <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                        {selectedFeedback.ats_feedback.rule_based.suggestions.map((s, i) => <li key={i} style={{ marginBottom: '8px' }}>{s}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}

@@ -33,8 +33,7 @@ exports.uploadResume = async (req, res) => {
         // 3. Process ATS Score asynchronously in the background
         (async () => {
             try {
-                const pdfBuffer = fs.readFileSync(req.file.path);
-                const evaluation = await evaluateResume(pdfBuffer, target_role || 'General', academic_year || '3rd Year');
+                const evaluation = await evaluateResume(req.file.path, target_role || 'General', academic_year || '3rd Year');
                 
                 await db.query(
                     'UPDATE resumes SET ats_score = $1, ats_feedback = $2 WHERE id = $3',

@@ -428,15 +428,15 @@ export default function Resumes() {
               )}
 
               {selectedFeedback.ats_feedback.mode === 'error' ? (
-                 <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
-                    <h4 style={{ margin: '0 0 8px 0' }}>Evaluation Error</h4>
-                    <p style={{ margin: 0, fontSize: '0.9rem' }}>{selectedFeedback.ats_feedback.error_message}</p>
-                    {selectedFeedback.ats_feedback.suggestions && (
-                      <ul style={{ marginTop: '8px', paddingLeft: '20px', fontSize: '0.85rem' }}>
-                        {selectedFeedback.ats_feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                      </ul>
-                    )}
-                 </div>
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#b91c1c', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
+                  <h4 style={{ margin: '0 0 8px 0' }}>Evaluation Error</h4>
+                  <p style={{ margin: 0, fontSize: '0.9rem' }}>{selectedFeedback.ats_feedback.error_message}</p>
+                  {selectedFeedback.ats_feedback.suggestions && (
+                    <ul style={{ marginTop: '8px', paddingLeft: '20px', fontSize: '0.85rem' }}>
+                      {selectedFeedback.ats_feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                    </ul>
+                  )}
+                </div>
               ) : (
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
@@ -444,34 +444,34 @@ export default function Resumes() {
                       <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 700, marginBottom: '12px', letterSpacing: '0.5px' }}>Rule-Based Analysis</h4>
                       <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.95rem' }}>
                         <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                           <span>Formatting Score</span> <strong>{selectedFeedback.ats_feedback.rule_based?.score || 0}/100</strong>
+                          <span>Formatting Score</span> <strong>{selectedFeedback.ats_feedback.rule_based?.score || 0}/100</strong>
                         </li>
                         {selectedFeedback.ats_feedback.rule_based?.keyword_coverage_pct !== undefined && (
                           <>
                             <li style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                               <span>Keyword Coverage</span> <strong>{selectedFeedback.ats_feedback.rule_based.keyword_coverage_pct}%</strong>
+                              <span>Keyword Coverage</span> <strong>{selectedFeedback.ats_feedback.rule_based.keyword_coverage_pct}%</strong>
                             </li>
                             {selectedFeedback.ats_feedback.rule_based.similarity_pct !== null && (
-                                <li style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                   <span>TF-IDF Similarity</span> <strong>{selectedFeedback.ats_feedback.rule_based.similarity_pct}%</strong>
-                                </li>
+                              <li style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>TF-IDF Similarity</span> <strong>{selectedFeedback.ats_feedback.rule_based.similarity_pct}%</strong>
+                              </li>
                             )}
                           </>
                         )}
                         {/* Fallback for general mode checks */}
                         {selectedFeedback.ats_feedback.rule_based?.checks && (
-                           <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                             {selectedFeedback.ats_feedback.rule_based.checks.slice(0, 3).map((check, idx) => (
-                               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>{check.name}</span>
-                                 <span>{check.points}/{check.max}</span>
-                               </div>
-                             ))}
-                           </div>
+                          <div style={{ marginTop: '12px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                            {selectedFeedback.ats_feedback.rule_based.checks.slice(0, 3).map((check, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>{check.name}</span>
+                                <span>{check.points}/{check.max}</span>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </ul>
                     </div>
-                    
+
                     <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                       <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--accent-primary)', fontWeight: 700, marginBottom: '12px', letterSpacing: '0.5px' }}>Gemini AI Analysis</h4>
                       {selectedFeedback.ats_feedback.ai ? (
@@ -525,7 +525,7 @@ export default function Resumes() {
                       </ul>
                     </div>
                   )}
-                  
+
                   {(!selectedFeedback.ats_feedback.ai?.tailoring_suggestions || selectedFeedback.ats_feedback.ai.tailoring_suggestions.length === 0) && selectedFeedback.ats_feedback.rule_based?.suggestions?.length > 0 && (
                     <div>
                       <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', color: 'var(--accent-primary)' }}>Suggestions</h4>

@@ -12,7 +12,6 @@ const initDb = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('PostgreSQL: Users table ready.');
 
         await db.query(`
             CREATE TABLE IF NOT EXISTS applications (
@@ -26,7 +25,6 @@ const initDb = async () => {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log('PostgreSQL: Applications table ready.');
 
         await db.query(`
             CREATE TABLE IF NOT EXISTS resumes (
@@ -42,16 +40,35 @@ const initDb = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        // Auto-migrations for existing resumes table
-        try {
-            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS target_role VARCHAR(255) DEFAULT 'General';`);
-            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '3rd Year';`);
-            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_score INTEGER DEFAULT 0;`);
-            await db.query(`ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_feedback JSONB;`);
-        } catch (migrationErr) {
-            console.log('Migration note:', migrationErr.message);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS processed_gmail_ids (
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                gmail_message_id VARCHAR(255) NOT NULL,
+                processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, gmail_message_id)
+            );
+        `);
+
+        // Auto-migrations for existing tables
+        const migrations = [
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS google_refresh_token TEXT`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_gmail_sync_at BIGINT DEFAULT 0`,
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS target_role VARCHAR(255) DEFAULT 'General'`,
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS academic_year VARCHAR(50) DEFAULT '3rd Year'`,
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_score INTEGER DEFAULT 0`,
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_feedback JSONB`,
+        ];
+
+        for (const sql of migrations) {
+            try {
+                await db.query(sql);
+            } catch (err) {
+                // Column already exists or similar — safe to ignore
+            }
         }
-        console.log('PostgreSQL: Resumes table ready.');
+
+        console.log('PostgreSQL: All tables ready.');
     } catch (err) {
         console.error('Error initializing database:', err);
     }

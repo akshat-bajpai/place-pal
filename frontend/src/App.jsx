@@ -6,8 +6,10 @@ import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import Resumes from './pages/Resumes';
 import ApplicationList from './pages/ApplicationList';
+import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './components/DashboardLayout';
+import NotificationToast from './components/NotificationToast';
 import './App.css';
 
 function App() {
@@ -15,15 +17,17 @@ function App() {
     <Router>
       <div className="app-container">
         <Navbar />
+        <NotificationToast />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          
+
           <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/applications/:status" element={<ApplicationList />} />
             <Route path="/resumes" element={<Resumes />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>
       </div>

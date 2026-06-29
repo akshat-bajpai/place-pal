@@ -9,7 +9,8 @@ export default function Navbar() {
   // Dashboard has its own specialized premium navbar
   const isDashboardRoute = location.pathname.startsWith('/dashboard') || 
                            location.pathname.startsWith('/applications') || 
-                           location.pathname.startsWith('/resumes');
+                           location.pathname.startsWith('/resumes') ||
+                           location.pathname.startsWith('/profile');
 
   if (isDashboardRoute) {
     return null;

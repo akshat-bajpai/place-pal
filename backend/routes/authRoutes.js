@@ -1,21 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, getProfile } = require('../controllers/authController');
+const { register, login, getProfile, triggerGmailSync } = require('../controllers/authController');
+const { getGoogleAuthUrl, googleAuthCallback } = require('../controllers/googleAuthController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// @route   POST /api/auth/register
-// @desc    Register user
-// @access  Public
 router.post('/register', register);
-
-// @route   POST /api/auth/login
-// @desc    Authenticate user & get token
-// @access  Public
 router.post('/login', login);
-
-// @route   GET /api/auth/profile
-// @desc    Get user profile
-// @access  Private
 router.get('/profile', authMiddleware, getProfile);
+
+router.get('/google/url', authMiddleware, getGoogleAuthUrl);
+router.get('/google/callback', googleAuthCallback);
+
+// Manual Gmail sync trigger (called after OAuth connect or on-demand from frontend)
+router.post('/gmail/sync', authMiddleware, triggerGmailSync);
 
 module.exports = router;

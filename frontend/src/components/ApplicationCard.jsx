@@ -35,18 +35,18 @@ export default function ApplicationCard({ app, onStatusChange, onDelete, index =
             <div {...attributes} {...listeners} style={{ cursor: 'grab', color: 'var(--border-light)', marginLeft: '-8px' }}>
               <GripVertical size={20} />
             </div>
-            
+
             {/* Company Logo */}
-            <img 
-              src={`https://logo.clearbit.com/${domain}`} 
+            <img
+              src={`https://logo.clearbit.com/${domain}`}
               alt={app.company}
-              onError={(e) => { 
-                e.target.onerror = null; 
+              onError={(e) => {
+                e.target.onerror = null;
                 e.target.src = `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://${domain}&size=128`;
               }}
               style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--border-light)', objectFit: 'cover', background: '#fff' }}
             />
-            
+
             <div>
               <h4 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
                 {app.company}
@@ -56,8 +56,8 @@ export default function ApplicationCard({ app, onStatusChange, onDelete, index =
               </p>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => onDelete(app.id)}
             style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', opacity: 0.6, transition: 'opacity 0.2s' }}
             onMouseOver={(e) => e.target.style.opacity = 1}
@@ -75,7 +75,7 @@ export default function ApplicationCard({ app, onStatusChange, onDelete, index =
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--border-light)' }}>
           <div style={{ position: 'relative' }}>
-            <select 
+            <select
               value={app.status}
               onChange={(e) => onStatusChange(app.id, e.target.value)}
               style={{
@@ -100,9 +100,9 @@ export default function ApplicationCard({ app, onStatusChange, onDelete, index =
           </div>
 
           {app.link && (
-            <a 
-              href={app.link} 
-              target="_blank" 
+            <a
+              href={app.link}
+              target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 600, padding: '6px 12px', background: 'rgba(79, 70, 229, 0.1)', borderRadius: '100px', transition: 'all 0.2s' }}
               onMouseOver={(e) => e.currentTarget.style.background = 'rgba(79, 70, 229, 0.2)'}

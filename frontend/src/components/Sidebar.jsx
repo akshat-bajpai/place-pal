@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle, User } from 'lucide-react';
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
@@ -13,6 +13,8 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { name: 'Rejected', path: '/applications/rejected', icon: <XCircle size={18} /> },
     { name: 'Resume Vault', path: '/resumes', icon: <FileText size={18} /> },
   ];
+
+  const isActiveProfile = location.pathname === '/profile';
 
   return (
     <motion.div
@@ -33,7 +35,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         top: '64px'
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: isOpen ? '0 16px' : '0 12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: isOpen ? '0 16px' : '0 12px', flex: 1 }}>
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -46,7 +48,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {links.map((link) => {
           const isActive = location.pathname === link.path;
           return (
@@ -83,6 +85,40 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             </Link>
           );
         })}
+      </div>
+
+      {/* Bottom Profile Section */}
+      <div style={{ padding: isOpen ? '0 16px' : '0 12px', marginTop: 'auto' }}>
+        <Link
+          to="/profile"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+            borderRadius: '12px', textDecoration: 'none', fontWeight: 600, fontSize: '0.95rem',
+            color: isActiveProfile ? 'var(--accent-primary)' : 'var(--text-secondary)',
+            background: isActiveProfile ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
+            transition: 'all 0.2s',
+            justifyContent: isOpen ? 'flex-start' : 'center',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden'
+          }}
+          title={!isOpen ? 'Profile' : ''}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', flexShrink: 0 }}>
+            <User size={18} />
+          </div>
+          <AnimatePresence>
+            {isOpen && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}
+              >
+                Profile
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Link>
       </div>
     </motion.div>
   );

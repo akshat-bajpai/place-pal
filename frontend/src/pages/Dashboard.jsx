@@ -73,6 +73,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchApps();
+
+    const handleJobUpdate = (e) => {
+      const updatedApp = e.detail.application;
+      setApplications(prev => {
+        const exists = prev.find(app => app.id === updatedApp.id);
+        if (exists) {
+          return prev.map(app => app.id === updatedApp.id ? updatedApp : app);
+        } else {
+          return [updatedApp, ...prev];
+        }
+      });
+    };
+
+    window.addEventListener('job_update_received', handleJobUpdate);
+    return () => window.removeEventListener('job_update_received', handleJobUpdate);
   }, []);
 
   const fetchApps = async () => {

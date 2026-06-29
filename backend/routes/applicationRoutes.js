@@ -28,3 +28,4 @@ router.put('/:id', updateApplication);
 router.delete('/:id', deleteApplication);
 
 module.exports = router;
+    

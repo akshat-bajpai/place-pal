@@ -112,37 +112,29 @@ exports.starResume = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Start transaction
-        await db.query('BEGIN');
+        const updated = await db.withTransaction(async (client) => {
+            // Verify the resume exists and belongs to the user
+            const findResult = await client.query(
+                'SELECT id FROM resumes WHERE id = $1 AND user_id = $2',
+                [id, req.user.id]
+            );
+            if (findResult.rows.length === 0) return null;
 
-        // Verify the resume exists and belongs to the user
-        const findResult = await db.query(
-            'SELECT * FROM resumes WHERE id = $1 AND user_id = $2',
-            [id, req.user.id]
-        );
+            // Unstar all resumes for this user, then star the selected one
+            await client.query(
+                'UPDATE resumes SET is_starred = false WHERE user_id = $1',
+                [req.user.id]
+            );
+            const updateResult = await client.query(
+                'UPDATE resumes SET is_starred = true WHERE id = $1 AND user_id = $2 RETURNING *',
+                [id, req.user.id]
+            );
+            return updateResult.rows[0];
+        });
 
-        if (findResult.rows.length === 0) {
-            await db.query('ROLLBACK');
-            return res.status(404).json({ message: 'Resume not found' });
-        }
-
-        // Unstar all resumes for this user
-        await db.query(
-            'UPDATE resumes SET is_starred = false WHERE user_id = $1',
-            [req.user.id]
-        );
-
-        // Star the selected resume
-        const updateResult = await db.query(
-            'UPDATE resumes SET is_starred = true WHERE id = $1 AND user_id = $2 RETURNING *',
-            [id, req.user.id]
-        );
-
-        await db.query('COMMIT');
-        
-        res.json(updateResult.rows[0]);
+        if (!updated) return res.status(404).json({ message: 'Resume not found' });
+        res.json(updated);
     } catch (error) {
-        await db.query('ROLLBACK');
         console.error('Error starring resume:', error);
         res.status(500).json({ message: 'Server error' });
     }

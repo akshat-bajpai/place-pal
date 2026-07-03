@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import Resumes from './pages/Resumes';
+import JobFinder from './pages/JobFinder';
 import ApplicationList from './pages/ApplicationList';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -27,6 +28,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/applications/:status" element={<ApplicationList />} />
             <Route path="/resumes" element={<Resumes />} />
+            <Route path="/jobs" element={<JobFinder />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Routes>

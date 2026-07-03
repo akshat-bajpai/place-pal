@@ -4,6 +4,9 @@ import { FileText, Upload, Trash2, Download, Plus, X, Star, Loader2 } from 'luci
 import DashboardNavbar from '../components/DashboardNavbar';
 import { getResumes, uploadResume, deleteResume, starResume } from '../api/resumes';
 
+// Uploaded files are served from the API host root (e.g. https://api.example.com/uploads/...)
+const FILE_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+
 export default function Resumes() {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +222,7 @@ export default function Resumes() {
 
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '20px' }}>
                       <a
-                        href={`http://localhost:8000${resume.file_path}`}
+                        href={`${FILE_BASE_URL}${resume.file_path}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-secondary"

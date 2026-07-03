@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle, User } from 'lucide-react';
+import { LayoutDashboard, FileText, Briefcase, CheckCircle2, Clock, XCircle, User, Radar } from 'lucide-react';
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
@@ -12,6 +12,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { name: 'Offered', path: '/applications/offered', icon: <CheckCircle2 size={18} /> },
     { name: 'Rejected', path: '/applications/rejected', icon: <XCircle size={18} /> },
     { name: 'Resume Vault', path: '/resumes', icon: <FileText size={18} /> },
+    { name: 'Job Finder', path: '/jobs', icon: <Radar size={18} /> },
   ];
 
   const isActiveProfile = location.pathname === '/profile';

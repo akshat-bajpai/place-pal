@@ -4,6 +4,7 @@
 databases:
   - name: placepal-db
     plan: free              # free Postgres is deleted ~30 days after creation
+    region: singapore       # closest free region to India (users are in India)
     databaseName: placepal
     user: placepal
 
@@ -12,6 +13,7 @@ services:
     name: placepal-api
     runtime: docker
     plan: free              # free web services sleep after ~15 min idle
+    region: singapore       # ~60-90ms from India vs ~300ms from Oregon
     rootDir: backend
     dockerfilePath: ./Dockerfile
     dockerContext: .

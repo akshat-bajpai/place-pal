@@ -3,18 +3,22 @@ const fs = require('fs');
 const path = require('path');
 const pdf = require('pdf-parse');
 
-// gemini-2.5-flash spends "thinking" tokens out of the SAME budget as the
-// visible output (maxOutputTokens). So the ceiling has to cover thinking + JSON.
-// Ranking is reasoning-heavy but emits tiny JSON -> lots of thinking, small body.
-// The ATS/resume calls emit large JSON -> modest thinking, big body. One shared
-// cap can't serve both, so callers pass their own budget.
-const getModel = ({ maxOutputTokens = 16384, thinkingBudget = -1 } = {}) => {
+// Per-model free-tier daily quotas are SEPARATE buckets, so we pick per call:
+//  - FLASH_LITE (1,000/day): high-volume, per-scan calls (profile, ranking).
+//  - FLASH (~20/day): low-volume, per-click calls where quality matters most
+//    (cover letters, resume advice).
+const FLASH_LITE = 'gemini-2.5-flash-lite';
+const FLASH = 'gemini-2.5-flash';
+
+// gemini spends "thinking" tokens out of the SAME budget as the visible output
+// (maxOutputTokens). So the ceiling has to cover thinking + JSON. Ranking is
+// reasoning-heavy but emits tiny JSON -> lots of thinking, small body. The
+// resume/cover-letter calls emit large JSON -> modest thinking, big body. One
+// shared cap can't serve both, so callers pass their own budget (and model).
+const getModel = ({ model = FLASH_LITE, maxOutputTokens = 16384, thinkingBudget = -1 } = {}) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     return genAI.getGenerativeModel({
-        // flash-lite gives 1,000 free requests/day vs. ~20/day on 2.5-flash —
-        // the throughput this app actually needs. Dynamic thinking (below) keeps
-        // ranking quality reasonable despite the lighter model.
-        model: 'gemini-2.5-flash-lite',
+        model,
         generationConfig: {
             maxOutputTokens,
             responseMimeType: 'application/json',
@@ -54,12 +58,12 @@ const isTransient = (err) => {
         || /\b(429|503)\b|quota|rate.?limit|overloaded|high demand|RESOURCE_EXHAUSTED|unavailable/i.test(msg);
 };
 
-const generateJson = async (prompt, { retries = 3, maxOutputTokens, thinkingBudget } = {}) => {
-    const model = getModel({ maxOutputTokens, thinkingBudget });
+const generateJson = async (prompt, { retries = 3, model, maxOutputTokens, thinkingBudget } = {}) => {
+    const genModel = getModel({ model, maxOutputTokens, thinkingBudget });
     let lastErr;
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
-            const result = await model.generateContent(prompt);
+            const result = await genModel.generateContent(prompt);
             let text = result.response.text().trim();
             text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
             return JSON.parse(text);
@@ -228,7 +232,9 @@ Output ONLY valid JSON, no markdown:
   "closing": "Sincerely"
 }`;
 
-    const c = await generateJson(prompt);
+    // Writing quality matters and this is a low-volume per-click call, so use the
+    // stronger FLASH model (its own small daily bucket is plenty for cover letters).
+    const c = await generateJson(prompt, { model: FLASH });
 
     const name = escapeLatex(c.candidate_name || 'Candidate');
     const contactParts = [c.candidate_email, c.candidate_phone].filter(Boolean).map(escapeLatex);
@@ -295,5 +301,6 @@ Output ONLY valid JSON, no markdown:
   "bullet_rewrites": [{"original": "an actual weak bullet from the resume", "improved": "rewritten version targeting this job", "reason": "why"}]
 }
 Include 3-5 improvements and 2-3 bullet_rewrites.`;
-    return generateJson(prompt);
+    // Nuanced, low-volume per-click call -> use the stronger FLASH model.
+    return generateJson(prompt, { model: FLASH });
 };

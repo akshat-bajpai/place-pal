@@ -5,7 +5,17 @@ const pdf = require('pdf-parse');
 
 const getModel = () => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    return genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+            maxOutputTokens: 8192,
+            responseMimeType: 'application/json',
+            // gemini-2.5-flash "thinking" otherwise eats the token budget and
+            // truncates the JSON (-> parse errors). Disable it for these
+            // structured-JSON calls.
+            thinkingConfig: { thinkingBudget: 0 },
+        },
+    });
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

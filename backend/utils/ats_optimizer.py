@@ -526,7 +526,7 @@ JD_SCHEMA = """{
 }"""
 
 
-def call_gemini(prompt_text, model, api_key, max_tokens=4096):
+def call_gemini(prompt_text, model, api_key, max_tokens=8192):
     url = f"{GEMINI_API_BASE}/{model}:generateContent"
     body = json.dumps({
         "contents": [{"role": "user", "parts": [{"text": prompt_text}]}],
@@ -534,7 +534,12 @@ def call_gemini(prompt_text, model, api_key, max_tokens=4096):
         "generationConfig": {
             "maxOutputTokens": max_tokens,
             "temperature": 0.2,
-            "responseMimeType": "application/json"
+            "responseMimeType": "application/json",
+            # gemini-2.5-flash is a "thinking" model: without this it spends the
+            # output-token budget on reasoning and truncates the JSON response
+            # (-> "Unterminated string" on parse). Disable thinking for this
+            # structured-JSON call so the full budget goes to the answer.
+            "thinkingConfig": {"thinkingBudget": 0},
         },
     }).encode("utf-8")
 

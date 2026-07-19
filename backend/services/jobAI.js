@@ -10,6 +10,10 @@ const pdf = require('pdf-parse');
 const FLASH_LITE = 'gemini-2.5-flash-lite';
 const FLASH = 'gemini-2.5-flash';
 
+// Matches scoring below this (0-100) are dropped rather than shown — a firm
+// quality gate independent of which model did the ranking.
+const MIN_MATCH_SCORE = 60;
+
 // gemini spends "thinking" tokens out of the SAME budget as the visible output
 // (maxOutputTokens). So the ceiling has to cover thinking + JSON. Ranking is
 // reasoning-heavy but emits tiny JSON -> lots of thinking, small body. The
@@ -178,6 +182,9 @@ Output ONLY a valid JSON array, no markdown:
     if (!Array.isArray(ranked)) return [];
     return ranked
         .filter(r => Number.isInteger(r.index) && r.index >= 0 && r.index < jobs.length)
+        // Hard quality floor: never surface weak matches, whichever model ranked
+        // them. Guards against a lighter model letting mediocre fits through.
+        .filter(r => (r.match_score || 0) >= MIN_MATCH_SCORE)
         .sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
 };
 

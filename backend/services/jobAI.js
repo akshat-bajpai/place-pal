@@ -36,12 +36,15 @@ const getModel = ({ model = FLASH_LITE, maxOutputTokens = 16384, thinkingBudget 
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// A per-DAY quota exhaustion (free tier ~20 req/day) won't clear for hours, so
-// retrying just burns the little quota that's left on calls that can't succeed.
-// Detect it and fail fast with a clear, user-facing signal.
+// A per-DAY quota exhaustion won't clear for hours, so retrying just burns the
+// little quota that's left on calls that can't succeed — fail fast with a clear
+// signal. Key STRICTLY off the per-day quotaId ("...PerDay...FreeTier"); the
+// metric name (generate_content_free_tier_requests) is shared with the
+// per-MINUTE limit, so matching on it would misclassify a transient RPM burst
+// as a daily wall and wrongly stop retrying.
 const isDailyQuota = (err) => {
     const msg = err?.message || '';
-    return /PerDay|RequestsPerDay|free_tier_requests/i.test(msg);
+    return /PerDay/i.test(msg);
 };
 
 class DailyQuotaError extends Error {

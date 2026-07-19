@@ -13,9 +13,13 @@ const env = {
   gmailClientSecret: process.env.GMAIL_CLIENT_SECRET,
   gmailRedirectUri: process.env.GMAIL_REDIRECT_URI,
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
-  allowedOrigins: process.env.ALLOWED_ORIGINS
+  // Browsers send the Origin header without a trailing slash, so normalize
+  // configured origins (trim whitespace + strip trailing slash) to avoid a
+  // silent CORS mismatch when an env var has a stray slash.
+  allowedOrigins: (process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
-    : [process.env.FRONTEND_URL || 'http://localhost:5173'],
+    : [process.env.FRONTEND_URL || 'http://localhost:5173']
+  ).map((o) => o.trim().replace(/\/+$/, '')).filter(Boolean),
 };
 
 // Fail fast on missing/insecure config rather than booting a broken or unsafe server.

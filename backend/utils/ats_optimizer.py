@@ -71,10 +71,10 @@ except ImportError:
     SKLEARN_AVAILABLE = False
 
 
-# flash-lite has a 1,000/day free bucket vs. ~20/day on 2.5-flash, so the ATS
-# AI layer keeps working instead of falling back to rule-based once the tiny
-# 2.5-flash quota is spent. (Same reasoning as the Job Finder services.)
-DEFAULT_MODEL = "gemini-2.5-flash-lite"
+# Resume analysis is quality-critical, so use the stronger FLASH model. Its free
+# daily bucket is reserved for quality work (cover letters, resume tips, ranking,
+# ATS) now that the high-volume email classifier runs on flash-lite instead.
+DEFAULT_MODEL = "gemini-2.5-flash"
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 

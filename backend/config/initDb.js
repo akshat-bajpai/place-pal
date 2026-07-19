@@ -51,6 +51,16 @@ const initDb = async () => {
         `);
 
         await db.query(`
+            CREATE TABLE IF NOT EXISTS email_parse_attempts (
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                gmail_message_id VARCHAR(255) NOT NULL,
+                attempts INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_id, gmail_message_id)
+            );
+        `);
+
+        await db.query(`
             CREATE TABLE IF NOT EXISTS job_searches (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

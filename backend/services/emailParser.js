@@ -67,19 +67,15 @@ null`;
         };
     } catch (err) {
         const { category } = classifyAiError(err);
-        // Infra-level failures (rate limit / overload / network / spent daily quota
-        // / server misconfig) aren't THIS email's fault — throw so the caller leaves
-        // it UNprocessed and retries on a later sync, once the limit clears / quota
-        // resets / key is fixed. No email is ever dropped for an AI-side problem.
-        // A malformed AI response for one specific email IS skipped, so we don't
-        // re-spend the tiny daily quota on it every cron cycle.
-        const retryLater = ['rate_limit', 'ai_overloaded', 'network', 'daily_quota', 'config'];
-        if (retryLater.includes(category)) {
-            console.warn(`[LLM] ${category} — leaving email unprocessed to retry later.`);
-            throw Object.assign(new Error(`LLM ${category}`), { isTransient: true, aiCategory: category });
-        }
-        if (category !== 'bad_response') console.error('[LLM] Parse error:', err.message || '');
-        return null;
+        // NEVER silently drop an email on an error — always throw so the caller can
+        // retry it and no recruitment update is missed. We only distinguish HOW to
+        // retry: infra failures (rate limit / overload / network / spent daily quota
+        // / server misconfig) aren't this email's fault and don't burn quota, so
+        // they retry indefinitely; a malformed AI response (bad_response/unknown)
+        // burns a quota unit per attempt, so the caller bounds those retries.
+        const infra = ['rate_limit', 'ai_overloaded', 'network', 'daily_quota', 'config'].includes(category);
+        if (!infra) console.error('[LLM] Parse error:', err.message || '');
+        throw Object.assign(new Error(`LLM ${category}`), { isTransient: true, isInfra: infra, aiCategory: category });
     }
 };
 

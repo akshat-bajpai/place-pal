@@ -153,7 +153,9 @@ Select the BEST matches (at most 15, only jobs genuinely worth applying to; skip
 Output ONLY a valid JSON array, no markdown:
 [{"index": 0, "match_score": 87, "match_summary": "One sentence on why this is a strong fit."}]`;
 
-    const ranked = await generateJson(prompt);
+    // Ranking is the quality-determining step of job search, so use the stronger
+    // FLASH model. Output is tiny (<=15 short objects), so it's cheap on tokens.
+    const ranked = await generateJson(prompt, { model: FLASH });
     if (!Array.isArray(ranked)) return [];
     return ranked
         .filter(r => Number.isInteger(r.index) && r.index >= 0 && r.index < jobs.length)

@@ -110,6 +110,31 @@ const markAsProcessed = async (userId, gmailMessageId) => {
     );
 };
 
+// A content-level parse error (malformed AI response) burns a quota unit each
+// attempt, so we retry it a bounded number of times before giving up — enough to
+// ride out a transient truncation without letting one pathological email drain
+// the whole daily quota. (Infra errors are NOT counted here; they retry forever.)
+const MAX_PARSE_ATTEMPTS = 5;
+
+const bumpParseAttempt = async (userId, gmailMessageId) => {
+    const res = await db.query(
+        `INSERT INTO email_parse_attempts (user_id, gmail_message_id, attempts)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, gmail_message_id)
+         DO UPDATE SET attempts = email_parse_attempts.attempts + 1, updated_at = CURRENT_TIMESTAMP
+         RETURNING attempts`,
+        [userId, gmailMessageId]
+    );
+    return res.rows[0].attempts;
+};
+
+const clearParseAttempts = async (userId, gmailMessageId) => {
+    await db.query(
+        'DELETE FROM email_parse_attempts WHERE user_id = $1 AND gmail_message_id = $2',
+        [userId, gmailMessageId]
+    );
+};
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const processMessage = async (gmail, msg, userId) => {
@@ -135,16 +160,31 @@ const processMessage = async (gmail, msg, userId) => {
     try {
         parsed = await parseEmail({ subject, from, text });
     } catch (err) {
-        if (err.isTransient) {
-            // Don't mark as processed — email will be retried on the next sync cycle
-            console.warn(`[Gmail] Transient LLM error on ${msg.id}, will retry.`);
+        if (err.isInfra) {
+            // AI temporarily unavailable (quota/rate limit/network/misconfig). NOT
+            // this email's fault and doesn't burn quota — leave it unprocessed and
+            // retry indefinitely on later syncs, once the AI is back. Never dropped.
+            console.warn(`[Gmail] ${err.aiCategory} on ${msg.id}, will retry when AI is back.`);
             return;
         }
-        throw err;
+        // Content-level error (malformed AI response). Retry a bounded number of
+        // times so a real recruitment email is never dropped over a transient
+        // glitch, but a permanently-bad one can't drain the daily quota forever.
+        const attempts = await bumpParseAttempt(userId, msg.id);
+        if (attempts < MAX_PARSE_ATTEMPTS) {
+            console.warn(`[Gmail] parse error on ${msg.id} (${err.aiCategory}, attempt ${attempts}/${MAX_PARSE_ATTEMPTS}), will retry.`);
+            return;
+        }
+        console.error(`[Gmail] Giving up on ${msg.id} after ${attempts} attempts (${err.aiCategory}).`);
+        await markAsProcessed(userId, msg.id);
+        await clearParseAttempts(userId, msg.id);
+        return;
     }
 
-    // LLM responded definitively (job email or not) — mark done so we skip on future syncs
+    // LLM responded definitively (job email or not) — mark done so we skip on future
+    // syncs, and clear any retry counter this email accumulated.
     await markAsProcessed(userId, msg.id);
+    await clearParseAttempts(userId, msg.id).catch(() => {});
 
     if (!parsed) return;
 

@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const dotenv = require('dotenv');
+const { classifyAiError } = require('./aiErrors');
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
@@ -63,11 +64,17 @@ exports.evaluateResume = (filePath, targetRole = 'General', academicYear = '3rd 
           // Parse the JSON output from the python script
           const parsedResult = JSON.parse(outputData.trim());
 
-          // Surface why the AI layer was skipped/failed so it isn't invisible.
+          // Surface why the AI layer was skipped/failed so it isn't invisible,
+          // and translate it into a friendly, specific message for the UI.
           if (parsedResult.ai_error) {
             console.error('[ATS] Gemini AI layer failed:', parsedResult.ai_error);
+            const { category, message } = classifyAiError({ message: String(parsedResult.ai_error) });
+            parsedResult.ai_error_category = category;
+            parsedResult.ai_error_message = message;
           } else if (!parsedResult.ai && !process.env.GEMINI_API_KEY) {
             console.warn('[ATS] No AI analysis (GEMINI_API_KEY missing).');
+            parsedResult.ai_error_category = 'config';
+            parsedResult.ai_error_message = 'AI analysis is not configured on the server, so only rule-based metrics are shown.';
           }
 
           // Map to match the DB schema's expected fields if necessary

@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { classifyAiError } = require('../utils/aiErrors');
 
 const VALID_STATUSES = new Set(['Applied', 'Interviewing', 'Offered', 'Rejected']);
 
@@ -65,18 +66,19 @@ null`;
             status: data.status,
         };
     } catch (err) {
-        const msg = err.message || '';
-        const isTransient = err.status === 429 || err.status === 503
-            || msg.includes('429') || msg.includes('503')
-            || msg.includes('quota') || msg.includes('high demand');
-        if (isTransient) {
-            // Throw so the caller can decide NOT to mark this email as processed —
-            // it will be retried on the next sync cycle
-            throw Object.assign(new Error('LLM transient error'), { isTransient: true });
+        const { category } = classifyAiError(err);
+        // Infra-level failures (rate limit / overload / network / spent daily quota
+        // / server misconfig) aren't THIS email's fault — throw so the caller leaves
+        // it UNprocessed and retries on a later sync, once the limit clears / quota
+        // resets / key is fixed. No email is ever dropped for an AI-side problem.
+        // A malformed AI response for one specific email IS skipped, so we don't
+        // re-spend the tiny daily quota on it every cron cycle.
+        const retryLater = ['rate_limit', 'ai_overloaded', 'network', 'daily_quota', 'config'];
+        if (retryLater.includes(category)) {
+            console.warn(`[LLM] ${category} — leaving email unprocessed to retry later.`);
+            throw Object.assign(new Error(`LLM ${category}`), { isTransient: true, aiCategory: category });
         }
-        if (!(err instanceof SyntaxError)) {
-            console.error('[LLM] Parse error:', msg);
-        }
+        if (category !== 'bad_response') console.error('[LLM] Parse error:', err.message || '');
         return null;
     }
 };

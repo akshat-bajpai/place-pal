@@ -488,7 +488,9 @@ export default function Resumes() {
                         </ul>
                       ) : (
                         <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                          AI analysis was unavailable or disabled. Only rule-based metrics are shown.
+                          {selectedFeedback.ats_feedback.ai_error_message
+                            || 'AI analysis was unavailable or disabled. Only rule-based metrics are shown.'}
+                          {selectedFeedback.ats_feedback.ai_error_category === 'daily_quota' && ' The rule-based score above is still accurate.'}
                         </p>
                       )}
                     </div>

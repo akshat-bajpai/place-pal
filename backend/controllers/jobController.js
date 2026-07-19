@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { classifyAiError } = require('../utils/aiErrors');
 const { discoverJobs } = require('../services/jobSources');
 const {
     getResumeText,
@@ -58,14 +59,12 @@ exports.startSearch = async (req, res) => {
         // Run the pipeline in the background (same pattern as ATS scoring)
         runSearchPipeline(search, resume).catch(async (err) => {
             console.error('[JobSearch] Pipeline failed:', err);
-            // Only show a raw message when we've deliberately made it user-facing
-            // (e.g. the daily AI limit); otherwise keep it generic for the UI.
-            const message = err?.userFacing
-                ? err.message
-                : 'Search failed while analyzing jobs. Please try again in a bit.';
+            // Classify into a friendly, specific reason (daily limit vs rate limit
+            // vs unreadable resume vs generic failure) for the UI.
+            const { category, message } = classifyAiError(err);
             await db.query(
                 `UPDATE job_searches SET status = 'error', stats = $1, completed_at = NOW() WHERE id = $2`,
-                [JSON.stringify({ error: message }), search.id]
+                [JSON.stringify({ error: message, error_category: category }), search.id]
             ).catch(() => {});
         });
     } catch (error) {
@@ -78,7 +77,11 @@ const runSearchPipeline = async (search, resume) => {
     // 1. Read resume + build profile
     const resumeText = await getResumeText(resume.file_path);
     if (!resumeText || resumeText.length < 50) {
-        throw new Error('Could not extract text from this resume PDF');
+        // Not an AI failure — a bad-input error the user can act on.
+        throw Object.assign(
+            new Error("We couldn't read any text from this resume. If it's a scanned image or an unusual PDF, try re-exporting it as a text-based PDF."),
+            { userFacing: true, category: 'input' }
+        );
     }
 
     // Profile extraction is a whole Gemini request; reuse the cached profile when
@@ -207,7 +210,9 @@ exports.createCoverLetter = async (req, res) => {
         res.json({ cover_letter: tex });
     } catch (error) {
         console.error('Error generating cover letter:', error);
-        res.status(500).json({ message: 'Failed to generate the cover letter. Please try again.' });
+        const { category, message } = classifyAiError(error);
+        res.status(category === 'daily_quota' || category === 'rate_limit' ? 429 : 500)
+            .json({ message, error_category: category });
     }
 };
 
@@ -230,7 +235,9 @@ exports.createSuggestions = async (req, res) => {
         res.json({ resume_suggestions: suggestions });
     } catch (error) {
         console.error('Error generating resume suggestions:', error);
-        res.status(500).json({ message: 'Failed to generate suggestions. Please try again.' });
+        const { category, message } = classifyAiError(error);
+        res.status(category === 'daily_quota' || category === 'rate_limit' ? 429 : 500)
+            .json({ message, error_category: category });
     }
 };
 

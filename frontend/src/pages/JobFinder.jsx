@@ -283,8 +283,11 @@ export default function JobFinder() {
             </div>
           )}
           {!isRunning && search?.status === 'error' && (
-            <p style={{ marginTop: '16px', fontSize: '0.9rem', color: '#ef4444' }}>
-              Last scan failed{stats?.error ? `: ${stats.error}` : ''}. Try again.
+            <p style={{
+              marginTop: '16px', fontSize: '0.9rem',
+              color: stats?.error_category === 'daily_quota' ? 'var(--text-secondary)' : '#ef4444',
+            }}>
+              {stats?.error || 'The last scan failed. Please try again.'}
             </p>
           )}
         </div>

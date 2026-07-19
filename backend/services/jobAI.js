@@ -2,6 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 const pdf = require('pdf-parse');
+const { classifyAiError, annotateAiError } = require('../utils/aiErrors');
 
 // Per-model free-tier daily quotas are SEPARATE buckets, so we pick per call:
 //  - FLASH_LITE (1,000/day): high-volume, per-scan calls (profile, ranking).
@@ -36,35 +37,6 @@ const getModel = ({ model = FLASH_LITE, maxOutputTokens = 16384, thinkingBudget 
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// A per-DAY quota exhaustion won't clear for hours, so retrying just burns the
-// little quota that's left on calls that can't succeed — fail fast with a clear
-// signal. Key STRICTLY off the per-day quotaId ("...PerDay...FreeTier"); the
-// metric name (generate_content_free_tier_requests) is shared with the
-// per-MINUTE limit, so matching on it would misclassify a transient RPM burst
-// as a daily wall and wrongly stop retrying.
-const isDailyQuota = (err) => {
-    const msg = err?.message || '';
-    return /PerDay/i.test(msg);
-};
-
-class DailyQuotaError extends Error {
-    constructor() {
-        super('Daily AI limit reached (Gemini free tier). Job search will work again tomorrow, or add Gemini billing to lift the cap.');
-        this.name = 'DailyQuotaError';
-        this.userFacing = true;
-    }
-}
-
-// Free-tier Gemini (gemini-2.5-flash) rate-limits bursts with 429/503. Treat those
-// (and transient "overloaded") as retryable; parse/logic errors are not. A per-day
-// quota wall is explicitly NOT retryable — that's handled separately above.
-const isTransient = (err) => {
-    if (isDailyQuota(err)) return false;
-    const msg = err?.message || '';
-    return err?.status === 429 || err?.status === 503
-        || /\b(429|503)\b|quota|rate.?limit|overloaded|high demand|RESOURCE_EXHAUSTED|unavailable/i.test(msg);
-};
-
 const generateJson = async (prompt, { retries = 3, model, maxOutputTokens, thinkingBudget } = {}) => {
     const genModel = getModel({ model, maxOutputTokens, thinkingBudget });
     let lastErr;
@@ -76,20 +48,20 @@ const generateJson = async (prompt, { retries = 3, model, maxOutputTokens, think
             return JSON.parse(text);
         } catch (err) {
             lastErr = err;
-            // A daily quota wall can't clear by retrying — stop immediately and
-            // surface a message the UI can show as-is.
-            if (isDailyQuota(err)) throw new DailyQuotaError();
-            // Only back off + retry on rate-limit/availability errors, not bad JSON.
-            if (attempt < retries && isTransient(err)) {
+            const { category, retryable } = classifyAiError(err);
+            // Only transient categories (rate_limit, overloaded, network, a
+            // truncated response) are worth retrying. A daily-quota wall or a
+            // config error will just fail again, so stop and report immediately.
+            if (attempt < retries && retryable) {
                 const backoff = Math.min(1000 * 2 ** attempt, 8000) + Math.floor(Math.random() * 400);
-                console.warn(`[jobAI] transient Gemini error (attempt ${attempt + 1}/${retries + 1}); retrying in ${backoff}ms`);
+                console.warn(`[jobAI] ${category} Gemini error (attempt ${attempt + 1}/${retries + 1}); retrying in ${backoff}ms`);
                 await sleep(backoff);
                 continue;
             }
-            throw err;
+            throw annotateAiError(err);
         }
     }
-    throw lastErr;
+    throw annotateAiError(lastErr);
 };
 
 /** Read the raw text out of a resume PDF stored in /uploads */

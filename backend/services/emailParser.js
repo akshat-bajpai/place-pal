@@ -7,7 +7,11 @@ const parseEmail = async (email) => {
     if (!subject && !text) return null;
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // Runs per-email on a 5-min cron — the app's highest-volume AI call. Use
+    // flash-lite (1,000/day free) so it doesn't drain the tiny 2.5-flash bucket
+    // that the low-volume quality calls (cover letters, resume tips) rely on.
+    // Simple classification, so the lighter model is more than sufficient.
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `You are a strict classifier for job application status emails.
 

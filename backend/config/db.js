@@ -1,11 +1,11 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+const env = require('./env');
 
 // Managed Postgres (Render/Neon/Supabase/Railway) requires SSL; local dev does not.
 // Auto-detect from the connection string, override with DATABASE_SSL=true/false.
-const connectionString = process.env.DATABASE_URL || '';
-const useSsl = process.env.DATABASE_SSL !== undefined
-  ? process.env.DATABASE_SSL !== 'false'
+const connectionString = env.databaseUrl;
+const useSsl = env.databaseSsl !== undefined
+  ? env.databaseSsl !== 'false'
   : !/localhost|127\.0\.0\.1/.test(connectionString);
 
 const pool = new Pool({

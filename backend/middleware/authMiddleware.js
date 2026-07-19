@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const env = require('../config/env');
+const AppError = require('../utils/AppError');
 
 module.exports = (req, res, next) => {
     // Get token from header
@@ -6,17 +8,17 @@ module.exports = (req, res, next) => {
 
     // Check if not token
     if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
+        return next(new AppError('No token, authorization denied', 401));
     }
 
     try {
         // Verify token. Expecting format "Bearer <token>"
         const tokenString = token.startsWith('Bearer ') ? token.split(' ')[1] : token;
-        const decoded = jwt.verify(tokenString, process.env.JWT_SECRET);
+        const decoded = jwt.verify(tokenString, env.jwtSecret);
 
         req.user = decoded.user;
         next();
     } catch (err) {
-        res.status(401).json({ message: 'Token is not valid' });
+        next(new AppError('Token is not valid', 401));
     }
 };

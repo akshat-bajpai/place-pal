@@ -104,9 +104,23 @@ const initDb = async () => {
             }
         }
 
+        // Recover job searches orphaned by a restart mid-run
+        try {
+            await db.query(
+                `UPDATE job_searches SET status = 'error',
+                 stats = '{"error": "Interrupted by a server restart. Please run the search again."}',
+                 completed_at = NOW()
+                 WHERE status = 'running'`
+            );
+        } catch (err) {
+            console.error('Failed to clean up orphaned job searches:', err);
+        }
+
         console.log('PostgreSQL: All tables ready.');
     } catch (err) {
         console.error('Error initializing database:', err);
+        // Re-throw so the server doesn't start against a broken/unreachable DB.
+        throw err;
     }
 };
 

@@ -10,10 +10,10 @@ const getModel = () => {
         generationConfig: {
             maxOutputTokens: 8192,
             responseMimeType: 'application/json',
-            // gemini-2.5-flash "thinking" otherwise eats the token budget and
-            // truncates the JSON (-> parse errors). Disable it for these
-            // structured-JSON calls.
-            thinkingConfig: { thinkingBudget: 0 },
+            // gemini-2.5-flash thinking tokens count against maxOutputTokens; if
+            // they consume it all the JSON truncates. Keep reasoning but CAP the
+            // thinking budget so it plus the full JSON both fit under the ceiling.
+            thinkingConfig: { thinkingBudget: 2048 },
         },
     });
 };

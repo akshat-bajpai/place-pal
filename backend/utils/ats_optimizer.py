@@ -535,11 +535,11 @@ def call_gemini(prompt_text, model, api_key, max_tokens=8192):
             "maxOutputTokens": max_tokens,
             "temperature": 0.2,
             "responseMimeType": "application/json",
-            # gemini-2.5-flash is a "thinking" model: without this it spends the
-            # output-token budget on reasoning and truncates the JSON response
-            # (-> "Unterminated string" on parse). Disable thinking for this
-            # structured-JSON call so the full budget goes to the answer.
-            "thinkingConfig": {"thinkingBudget": 0},
+            # gemini-2.5-flash is a "thinking" model and thinking tokens count
+            # against maxOutputTokens. Previously thinking ate the 4096 budget and
+            # truncated the JSON (-> "Unterminated string"). Keep reasoning but
+            # CAP it, inside a larger ceiling, so thinking + the full JSON both fit.
+            "thinkingConfig": {"thinkingBudget": 2048},
         },
     }).encode("utf-8")
 

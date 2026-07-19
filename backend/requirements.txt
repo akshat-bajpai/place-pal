@@ -1,0 +1,5 @@
+# Python deps for utils/ats_optimizer.py (resume text extraction).
+# scikit-learn is an optional extra (JD<->resume TF-IDF similarity); left out
+# to keep the image small — the scorer degrades gracefully without it.
+PyPDF2==3.0.1
+python-docx==1.2.0

@@ -24,8 +24,15 @@ exports.evaluateResume = (filePath, targetRole = 'General', academicYear = '3rd 
         '--json'
       ];
 
-      // Spawn the python process
-      const pythonProcess = spawn('python3', args);
+      // The Python scorer reads GEMINI_API_KEY from the environment (inherited
+      // via spawn). Warn loudly if it's missing — the script would otherwise
+      // silently skip the AI layer and return only the rule-based score.
+      if (!process.env.GEMINI_API_KEY) {
+        console.warn('[ATS] GEMINI_API_KEY not set — AI analysis will be skipped (rule-based score only).');
+      }
+
+      // Spawn the python process (env inherited so the scorer sees GEMINI_API_KEY)
+      const pythonProcess = spawn('python3', args, { env: process.env });
 
       let outputData = '';
       let errorData = '';
@@ -55,12 +62,19 @@ exports.evaluateResume = (filePath, targetRole = 'General', academicYear = '3rd 
         try {
           // Parse the JSON output from the python script
           const parsedResult = JSON.parse(outputData.trim());
-          
+
+          // Surface why the AI layer was skipped/failed so it isn't invisible.
+          if (parsedResult.ai_error) {
+            console.error('[ATS] Gemini AI layer failed:', parsedResult.ai_error);
+          } else if (!parsedResult.ai && !process.env.GEMINI_API_KEY) {
+            console.warn('[ATS] No AI analysis (GEMINI_API_KEY missing).');
+          }
+
           // Map to match the DB schema's expected fields if necessary
           // The database uses `evaluation.overall_score`
           parsedResult.overall_score = parsedResult.final_score || 0;
           parsedResult.parsing_flag = parsedResult.docx_issues && parsedResult.docx_issues.length > 0;
-          
+
           resolve(parsedResult);
         } catch (parseError) {
           console.error('Error parsing JSON from Python script:', parseError);

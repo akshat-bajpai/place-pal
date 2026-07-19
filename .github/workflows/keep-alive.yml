@@ -1,0 +1,19 @@
+name: keep-alive
+
+# Pings the Render backend so the free instance doesn't sleep after 15 min idle
+# (which causes 30-60s cold starts). One always-on service fits in Render's
+# ~750 free hours/month.
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes
+  workflow_dispatch:          # allow manual runs
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: |
+          curl -fsS --max-time 90 https://placepal-api.onrender.com/health \
+            && echo "  backend awake" \
+            || echo "  ping failed (still triggers a wake) — non-fatal"

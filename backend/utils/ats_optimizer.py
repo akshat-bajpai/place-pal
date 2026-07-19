@@ -71,7 +71,10 @@ except ImportError:
     SKLEARN_AVAILABLE = False
 
 
-DEFAULT_MODEL = "gemini-2.5-flash"
+# flash-lite has a 1,000/day free bucket vs. ~20/day on 2.5-flash, so the ATS
+# AI layer keeps working instead of falling back to rule-based once the tiny
+# 2.5-flash quota is spent. (Same reasoning as the Job Finder services.)
+DEFAULT_MODEL = "gemini-2.5-flash-lite"
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
@@ -526,7 +529,7 @@ JD_SCHEMA = """{
 }"""
 
 
-def call_gemini(prompt_text, model, api_key, max_tokens=8192):
+def call_gemini(prompt_text, model, api_key, max_tokens=16384):
     url = f"{GEMINI_API_BASE}/{model}:generateContent"
     body = json.dumps({
         "contents": [{"role": "user", "parts": [{"text": prompt_text}]}],

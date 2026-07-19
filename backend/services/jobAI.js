@@ -8,12 +8,38 @@ const getModel = () => {
     return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 };
 
-const generateJson = async (prompt) => {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Free-tier Gemini (gemini-2.5-flash) rate-limits bursts with 429/503. Treat those
+// (and transient "overloaded") as retryable; parse/logic errors are not.
+const isTransient = (err) => {
+    const msg = err?.message || '';
+    return err?.status === 429 || err?.status === 503
+        || /\b(429|503)\b|quota|rate.?limit|overloaded|high demand|RESOURCE_EXHAUSTED|unavailable/i.test(msg);
+};
+
+const generateJson = async (prompt, { retries = 3 } = {}) => {
     const model = getModel();
-    const result = await model.generateContent(prompt);
-    let text = result.response.text().trim();
-    text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
-    return JSON.parse(text);
+    let lastErr;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+            const result = await model.generateContent(prompt);
+            let text = result.response.text().trim();
+            text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+            return JSON.parse(text);
+        } catch (err) {
+            lastErr = err;
+            // Only back off + retry on rate-limit/availability errors, not bad JSON.
+            if (attempt < retries && isTransient(err)) {
+                const backoff = Math.min(1000 * 2 ** attempt, 8000) + Math.floor(Math.random() * 400);
+                console.warn(`[jobAI] transient Gemini error (attempt ${attempt + 1}/${retries + 1}); retrying in ${backoff}ms`);
+                await sleep(backoff);
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw lastErr;
 };
 
 /** Read the raw text out of a resume PDF stored in /uploads */

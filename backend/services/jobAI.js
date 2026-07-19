@@ -3,33 +3,59 @@ const fs = require('fs');
 const path = require('path');
 const pdf = require('pdf-parse');
 
-const getModel = () => {
+// gemini-2.5-flash spends "thinking" tokens out of the SAME budget as the
+// visible output (maxOutputTokens). So the ceiling has to cover thinking + JSON.
+// Ranking is reasoning-heavy but emits tiny JSON -> lots of thinking, small body.
+// The ATS/resume calls emit large JSON -> modest thinking, big body. One shared
+// cap can't serve both, so callers pass their own budget.
+const getModel = ({ maxOutputTokens = 16384, thinkingBudget = -1 } = {}) => {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     return genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
+        // flash-lite gives 1,000 free requests/day vs. ~20/day on 2.5-flash —
+        // the throughput this app actually needs. Dynamic thinking (below) keeps
+        // ranking quality reasonable despite the lighter model.
+        model: 'gemini-2.5-flash-lite',
         generationConfig: {
-            maxOutputTokens: 8192,
+            maxOutputTokens,
             responseMimeType: 'application/json',
-            // gemini-2.5-flash thinking tokens count against maxOutputTokens; if
-            // they consume it all the JSON truncates. Keep reasoning but CAP the
-            // thinking budget so it plus the full JSON both fit under the ceiling.
-            thinkingConfig: { thinkingBudget: 2048 },
+            // thinkingBudget: -1 = dynamic (let the model decide), 0 = off,
+            // or a fixed cap. Whatever it is, maxOutputTokens must leave room
+            // for it PLUS the full JSON or the response truncates mid-string.
+            thinkingConfig: { thinkingBudget },
         },
     });
 };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// A per-DAY quota exhaustion (free tier ~20 req/day) won't clear for hours, so
+// retrying just burns the little quota that's left on calls that can't succeed.
+// Detect it and fail fast with a clear, user-facing signal.
+const isDailyQuota = (err) => {
+    const msg = err?.message || '';
+    return /PerDay|RequestsPerDay|free_tier_requests/i.test(msg);
+};
+
+class DailyQuotaError extends Error {
+    constructor() {
+        super('Daily AI limit reached (Gemini free tier). Job search will work again tomorrow, or add Gemini billing to lift the cap.');
+        this.name = 'DailyQuotaError';
+        this.userFacing = true;
+    }
+}
+
 // Free-tier Gemini (gemini-2.5-flash) rate-limits bursts with 429/503. Treat those
-// (and transient "overloaded") as retryable; parse/logic errors are not.
+// (and transient "overloaded") as retryable; parse/logic errors are not. A per-day
+// quota wall is explicitly NOT retryable — that's handled separately above.
 const isTransient = (err) => {
+    if (isDailyQuota(err)) return false;
     const msg = err?.message || '';
     return err?.status === 429 || err?.status === 503
         || /\b(429|503)\b|quota|rate.?limit|overloaded|high demand|RESOURCE_EXHAUSTED|unavailable/i.test(msg);
 };
 
-const generateJson = async (prompt, { retries = 3 } = {}) => {
-    const model = getModel();
+const generateJson = async (prompt, { retries = 3, maxOutputTokens, thinkingBudget } = {}) => {
+    const model = getModel({ maxOutputTokens, thinkingBudget });
     let lastErr;
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
@@ -39,6 +65,9 @@ const generateJson = async (prompt, { retries = 3 } = {}) => {
             return JSON.parse(text);
         } catch (err) {
             lastErr = err;
+            // A daily quota wall can't clear by retrying — stop immediately and
+            // surface a message the UI can show as-is.
+            if (isDailyQuota(err)) throw new DailyQuotaError();
             // Only back off + retry on rate-limit/availability errors, not bad JSON.
             if (attempt < retries && isTransient(err)) {
                 const backoff = Math.min(1000 * 2 ** attempt, 8000) + Math.floor(Math.random() * 400);

@@ -94,6 +94,11 @@ const initDb = async () => {
             `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_score INTEGER DEFAULT 0`,
             `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_feedback JSONB`,
             `ALTER TABLE job_searches ADD COLUMN IF NOT EXISTS target_companies TEXT`,
+            // Cache the AI-extracted search profile per resume so re-scans skip the
+            // extractProfile Gemini call. Reused only when the interests it was built
+            // from still match (stored alongside it).
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS search_profile JSONB`,
+            `ALTER TABLE resumes ADD COLUMN IF NOT EXISTS search_profile_interests TEXT`,
         ];
 
         for (const sql of migrations) {

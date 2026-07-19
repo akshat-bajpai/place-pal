@@ -58,9 +58,14 @@ exports.startSearch = async (req, res) => {
         // Run the pipeline in the background (same pattern as ATS scoring)
         runSearchPipeline(search, resume).catch(async (err) => {
             console.error('[JobSearch] Pipeline failed:', err);
+            // Only show a raw message when we've deliberately made it user-facing
+            // (e.g. the daily AI limit); otherwise keep it generic for the UI.
+            const message = err?.userFacing
+                ? err.message
+                : 'Search failed while analyzing jobs. Please try again in a bit.';
             await db.query(
                 `UPDATE job_searches SET status = 'error', stats = $1, completed_at = NOW() WHERE id = $2`,
-                [JSON.stringify({ error: err.message }), search.id]
+                [JSON.stringify({ error: message }), search.id]
             ).catch(() => {});
         });
     } catch (error) {
@@ -75,7 +80,21 @@ const runSearchPipeline = async (search, resume) => {
     if (!resumeText || resumeText.length < 50) {
         throw new Error('Could not extract text from this resume PDF');
     }
-    const profile = await extractProfile(resumeText, search.interests);
+
+    // Profile extraction is a whole Gemini request; reuse the cached profile when
+    // this resume was already profiled against the same interests. Saves ~half the
+    // daily quota on re-scans (free tier is only ~1k req/day).
+    const currentInterests = search.interests || '';
+    let profile;
+    if (resume.search_profile && (resume.search_profile_interests || '') === currentInterests) {
+        profile = resume.search_profile;
+    } else {
+        profile = await extractProfile(resumeText, search.interests);
+        await db.query(
+            'UPDATE resumes SET search_profile = $1, search_profile_interests = $2 WHERE id = $3',
+            [JSON.stringify(profile), currentInterests, resume.id]
+        ).catch((e) => console.warn('[JobSearch] failed to cache profile:', e.message));
+    }
 
     // 2. Fan out across every job source, incl. company career pages.
     // Target companies = ones the user typed in + ones named in interests/resume.

@@ -7,7 +7,6 @@ PlacePal is a full-stack web app that helps students and job-seekers **manage th
 3. **Scores your resume** for ATS (Applicant Tracking System) friendliness using a hybrid rules-engine + Gemini AI pipeline.
 4. **Finds jobs for you** — an AI reads your resume, fans out across ~10 job boards *and* company career pages (Greenhouse, Lever, Ashby, Workday, Microsoft, Amazon…), ranks the openings against your profile, and generates tailored cover letters and resume-improvement tips.
 
-> This README is written to be **interview-ready**: it explains not just *what* the code does, but *why* each technology and architectural decision was made, and walks through every major logic flow end-to-end.
 
 ---
 
